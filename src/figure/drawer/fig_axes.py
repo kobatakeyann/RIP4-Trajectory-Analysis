@@ -19,13 +19,12 @@ from config.constant import (
     CONTOUR_COLOR,
     CONTOUR_LABEL_SIZE,
     CONTOUR_WIDTH,
-    TITLE_SIZE,
 )
 from figure.property.fig_property import FigureProperties
 
 
 class FigureAxesController:
-    def __init__(self, ax: GeoAxes, props: FigureProperties) -> None:
+    def __init__(self, ax: Axes | GeoAxes, props: FigureProperties) -> None:
         self.ax = ax
         self._props = props
 
@@ -88,8 +87,32 @@ class FigureAxesController:
                 fontsize=CONTOUR_LABEL_SIZE,
             )
 
-    def set_title(self, title_name: str) -> None:
-        self.ax.set_title(title_name, fontsize=TITLE_SIZE)
+    def set_axis_labels(self, x_label: str, y_label: str) -> None:
+        self.ax.set_xlabel(x_label, fontsize=16)
+        self.ax.set_ylabel(y_label, fontsize=16)
+        self.ax.tick_params(axis="both")
+
+    def set_axis_range(
+        self,
+        x_min: float,
+        x_max: float,
+        y_min: float,
+        y_max: float,
+    ) -> None:
+        self.ax.set_xlim(x_min, x_max)
+        self.ax.set_ylim(y_min, y_max)
+
+    def set_x_ticks_label(
+        self, x_ticks: np.ndarray, x_labels: list[str]
+    ) -> None:
+        self.ax.set_xticks(x_ticks)
+        self.ax.set_xticklabels(x_labels, rotation=45)
+
+    def draw_grid(self) -> None:
+        self.ax.grid(which="major", linestyle="--", linewidth=0.4)
+
+    def set_title(self, title_name: str, fontsize: float) -> None:
+        self.ax.set_title(title_name, fontsize=fontsize)
 
     def save_figure(
         self, fig: Figure, save_dir: str, filename: str, dpi: int

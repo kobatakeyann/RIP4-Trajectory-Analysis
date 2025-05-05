@@ -1,11 +1,13 @@
 # RIP4 Trajectory Visualization
 
 RIP4 による流跡線解析の結果を可視化します。
-![](backward_sample.jpg)
+![](traj_map_sample.jpg)
+![](traj_vertical_sample.jpg)
 
 ## Feature
 
-- RIP4 の backward/forward trajectory の結果を地図上に可視化します。
+- RIP4 の backward/forward trajectory の流跡線を地図上に可視化します。
+- 時間-高度図を作成して、流跡線の物理量の時間変化を可視化します。
 - パーセルの物理量変化をカラーによって表現します。
 
 ## 仮想環境

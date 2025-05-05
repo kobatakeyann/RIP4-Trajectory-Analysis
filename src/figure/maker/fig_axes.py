@@ -63,7 +63,7 @@ class FigureAxesController:
         self.cbar.set_label(
             UNIT_LABEL,
             labelpad=CBAR_LABEL_LOCATION,
-            y=1.05,
+            y=1.09,
             rotation=0,
             fontsize=CBAR_LABEL_SIZE,
         )

@@ -27,6 +27,9 @@ grid_line = True
 GRIDLINE_COLOR = "grey"
 GRIDLINE_WIDTH = 0.1
 
+# figure size
+FIGURE_SIZE = 10
+
 # title size
 TITLE_SIZE = 10
 

@@ -16,6 +16,7 @@ from config.constant import (
     ELEVATION_CONTOUR_INTERVAL,
     ELEVATION_MAX,
     ELEVATION_MIN,
+    FIGURE_SIZE,
     TRAJECTORY_LINE_WIDTH,
 )
 
@@ -33,7 +34,10 @@ class FigureProperties:
     def _calculate_figsize(self) -> tuple:
         lat_dif = LAT_TOP - LAT_BOTTOM
         lon_dif = LON_RIGHT - LON_LEFT
-        figsize = (8, 8 * float(float(lat_dif) / float(lon_dif)))
+        figsize = (
+            FIGURE_SIZE,
+            FIGURE_SIZE * float(float(lat_dif) / float(lon_dif)),
+        )
         return figsize
 
     def _get_contour_levels(self) -> np.ndarray:

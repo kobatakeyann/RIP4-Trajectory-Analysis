@@ -6,12 +6,12 @@ import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
 
 from config.constant import cbar_auto_ticks
-from figure.maker.fig_axes import FigureAxesController
+from figure.drawer.fig_axes import FigureAxesController
 from figure.map.plot import make_blank_map
 from figure.property.fig_property import FigureProperties
 
 
-class Drawer:
+class HorizontalTrackDrawer:
     def __init__(self, props: FigureProperties) -> None:
         self._props = props
         self.fig = plt.figure(figsize=self._props.figsize)

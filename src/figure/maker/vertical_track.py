@@ -71,17 +71,17 @@ def make_vertical_track_figure():
         target_ax.plot_colorbar(is_auto_ticks=cbar_auto_ticks)
         target_ax.set_cbar_label()
 
-    # trajectory period
-    traj_start_time_idx = 0
-    traj_end_time_idx = len(times) - 1
+    # trajectory time
+    former_time = times[-1] if TRAJECTORY_TYPE == "backward" else times[0]
+    latter_time = times[0] if TRAJECTORY_TYPE == "backward" else times[-1]
 
     # axis
     target_ax.set_axis_labels(
         x_label=f"Time ({TIME_ZONE})", y_label="Height [m]"
     )
     target_ax.set_axis_range(
-        x_min=traj_start_time_idx,
-        x_max=traj_end_time_idx,
+        x_min=former_time,
+        x_max=latter_time,
         y_min=LEVEL_MIN,
         y_max=LEVEL_MAX,
     )
@@ -92,9 +92,9 @@ def make_vertical_track_figure():
         end=LATTER_PERIOD_HOUR,
         freq=f"{RIP4_TIME_INTERVAL}min",
     )[::TIME_TICKS_INTERVAL]
-    x_ticks = np.arange(traj_start_time_idx, traj_end_time_idx + 1, 1)[
-        ::TIME_TICKS_INTERVAL
-    ]
+    x_ticks = np.arange(
+        former_time, latter_time + 0.0000001, RIP4_TIME_INTERVAL / 60.0
+    )[::TIME_TICKS_INTERVAL]
     target_ax.set_x_ticks_label(
         x_ticks=x_ticks,
         x_labels=list(

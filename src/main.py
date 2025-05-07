@@ -1,5 +1,5 @@
 from figure.maker.horizontal_track import make_horizontal_track_figure
-from figure.maker.vertival_track import make_vertical_track_figure
+from figure.maker.vertical_track import make_vertical_track_figure
 
 
 def main():

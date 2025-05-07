@@ -77,7 +77,7 @@ def make_vertical_track_figure():
 
     # axis
     target_ax.set_axis_labels(
-        x_label=f"Time {TIME_ZONE}", y_label="Height [m]"
+        x_label=f"Time ({TIME_ZONE})", y_label="Height [m]"
     )
     target_ax.set_axis_range(
         x_min=traj_start_time_idx,

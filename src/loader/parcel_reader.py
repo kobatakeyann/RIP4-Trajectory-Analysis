@@ -30,6 +30,7 @@ class TrajectoryResultReader:
             max_valid_index = np.where(lons == "*********")[0][0]
         else:
             max_valid_index = len(lons)
+        df.replace("*********", np.nan, inplace=True)
 
         # extract valid data
         lons = np.array(

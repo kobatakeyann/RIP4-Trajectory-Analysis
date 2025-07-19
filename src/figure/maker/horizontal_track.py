@@ -62,7 +62,7 @@ def make_horizontal_track_figure():
 
     # elevation contour plot
     if plot_elevation_contour:
-        nc = netCDF4.Dataset(WRFOUT_PATH)
+        nc = netCDF4.Dataset(WRFOUT_PATH)  # type: ignore
         elevation = cast(np.ndarray, to_np(getvar(nc, "HGT")))
         lat = cast(np.ndarray, getvar(nc, "XLAT"))
         lon = cast(np.ndarray, getvar(nc, "XLONG"))

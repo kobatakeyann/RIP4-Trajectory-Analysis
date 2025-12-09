@@ -4,7 +4,6 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
-
 from config.constant import cbar_auto_ticks
 from figure.drawer.fig_axes import FigureAxesController
 from figure.map.plot import make_blank_map
@@ -23,6 +22,42 @@ class HorizontalTrackDrawer:
             ),
         )
         self.ax = make_blank_map(ax)
+
+    def plot_rectangle_area(
+        self,
+        lon_left: float,
+        lon_right: float,
+        lat_bottom: float,
+        lat_top: float,
+    ) -> None:
+        self.ax.plot(
+            [lon_left, lon_right],
+            [lat_bottom, lat_bottom],
+            color="red",
+            transform=ccrs.PlateCarree(),
+            linewidth=0.5,
+        )
+        self.ax.plot(
+            [lon_left, lon_right],
+            [lat_top, lat_top],
+            color="red",
+            transform=ccrs.PlateCarree(),
+            linewidth=0.5,
+        )
+        self.ax.plot(
+            [lon_left, lon_left],
+            [lat_bottom, lat_top],
+            color="red",
+            transform=ccrs.PlateCarree(),
+            linewidth=0.5,
+        )
+        self.ax.plot(
+            [lon_right, lon_right],
+            [lat_bottom, lat_top],
+            color="red",
+            transform=ccrs.PlateCarree(),
+            linewidth=0.5,
+        )
 
     def plot_trajectory_track(
         self,

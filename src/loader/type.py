@@ -3,7 +3,7 @@ from typing import NamedTuple
 import numpy as np
 
 
-class TrackedParcel(NamedTuple):
-    lon: np.ndarray
-    lat: np.ndarray
-    var_value: np.ndarray
+class TrackedParcels(NamedTuple):
+    lons: np.ndarray
+    lats: np.ndarray
+    var_values: np.ndarray

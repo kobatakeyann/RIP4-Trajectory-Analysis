@@ -4,25 +4,36 @@ from glob import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 from config.configuration import (
-    FORMER_PERIOD_HOUR,
-    HEIGHT_KM,
-    LATTER_PERIOD_HOUR,
+    FILTERING_AREA_NAME,
+    FORMER_DATETIME,
+    LATTER_DATETIME,
     LEVEL_MAX,
     LEVEL_MIN,
+    MEDIAN_LINE_COLOR,
+    MEDIAN_LINEWIDTH,
     PARCEL_LAT_BOTTOM,
     PARCEL_LAT_TOP,
+    PARCEL_LEVEL_KM,
     PARCEL_LON_LEFT,
     PARCEL_LON_RIGHT,
-    RIP4_TIME_INTERVAL,
+    REC_LAT_BOTTOM,
+    REC_LAT_TOP,
+    REC_LON_LEFT,
+    REC_LON_RIGHT,
+    RIP4_HISTORY_INTERVAL,
+    SHADE_25TH_75TH_ALPHA,
+    SHADE_25TH_75TH_COLOR,
     TIME_TICKS_FORMAT,
     TIME_TICKS_INTERVAL,
     TIME_ZONE,
     TRAJECTORY_RESULTS_DIR,
     TRAJECTORY_TYPE,
     VARIABLE,
-    WRFOUT_PATH,
+    filter_parcels_in_rectangle,
+    paint_25th_75th_percentile,
+    plot_median_track,
+    wrfout_path,
 )
 from config.constant import IMAGE_DPI, cbar_auto_ticks
 from constant.analysis_type import TrajectoryAnalysisType
@@ -44,17 +55,24 @@ def make_vertical_track_figure():
     reader = TrajectoryResultReader(TrajectoryAnalysisType(TRAJECTORY_TYPE))
 
     # read each parcel track and plot
+    parcel_levels_to_plot = []
+    parcel_times_to_plot = []
     result_files = sorted(glob(f"{TRAJECTORY_RESULTS_DIR}/*.asc"))
     for result_file in result_files:
-        parcel_variable_track = reader.get_parcel_track(
+        lons, lats, var_values = reader.get_parcel_track(
             result_filepath=result_file,
             variable=VARIABLE,
         )
-        _, _, var_values = (
-            parcel_variable_track.lon,
-            parcel_variable_track.lat,
-            parcel_variable_track.var_value,
-        )
+        # skip parcels in the specified rectangle area
+        if filter_parcels_in_rectangle:
+            if not (
+                (REC_LON_LEFT <= lons)
+                & (lons <= REC_LON_RIGHT)
+                & (REC_LAT_BOTTOM <= lats)
+                & (lats <= REC_LAT_TOP)
+            ).any():
+                continue
+        # get height and time
         _, _, levels = reader.get_parcel_track(
             result_filepath=result_file,
             variable=Variable.HGT,
@@ -63,6 +81,10 @@ def make_vertical_track_figure():
             result_filepath=result_file,
             variable=Variable.TIME,
         )
+        # collect parcels to plot median track
+        parcel_levels_to_plot.append(levels)
+        parcel_times_to_plot.append(times)
+        # plot each trajectory line
         points = np.array([times[:], levels[:]]).T.reshape(-1, 1, 2)
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
         target_ax.plot_trajectory_line(
@@ -70,6 +92,36 @@ def make_vertical_track_figure():
         )
         target_ax.plot_colorbar(is_auto_ticks=cbar_auto_ticks)
         target_ax.set_cbar_label()
+
+    # plot median trajectory line
+    if plot_median_track:
+        levels_median = np.nanmedian(np.vstack(parcel_levels_to_plot), axis=0)
+        times_median = np.nanmedian(np.vstack(parcel_times_to_plot), axis=0)
+        points = np.array([times_median[:], levels_median[:]]).T.reshape(
+            -1, 1, 2
+        )
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+        target_ax.plot_median_line(
+            point_segments=segments,
+            line_color=MEDIAN_LINE_COLOR,
+            line_width=MEDIAN_LINEWIDTH,
+        )
+    # plot 25th-75th percentile shading
+    if paint_25th_75th_percentile:
+        levels_25th = np.nanpercentile(
+            np.vstack(parcel_levels_to_plot), 25, axis=0
+        )
+        levels_75th = np.nanpercentile(
+            np.vstack(parcel_levels_to_plot), 75, axis=0
+        )
+        times_median = np.nanmedian(np.vstack(parcel_times_to_plot), axis=0)
+        target_ax.plot_shaded_area(
+            x_values=times_median,
+            y_values_bottom=levels_25th,
+            y_values_top=levels_75th,
+            color=SHADE_25TH_75TH_COLOR,
+            alpha=SHADE_25TH_75TH_ALPHA,
+        )
 
     # trajectory time
     former_time = times[-1] if TRAJECTORY_TYPE == "backward" else times[0]
@@ -88,12 +140,12 @@ def make_vertical_track_figure():
 
     # ticks
     time_labels = pd.date_range(
-        start=FORMER_PERIOD_HOUR,
-        end=LATTER_PERIOD_HOUR,
-        freq=f"{RIP4_TIME_INTERVAL}min",
+        start=FORMER_DATETIME,
+        end=LATTER_DATETIME,
+        freq=f"{RIP4_HISTORY_INTERVAL}min",
     )[::TIME_TICKS_INTERVAL]
     x_ticks = np.arange(
-        former_time, latter_time + 0.0000001, RIP4_TIME_INTERVAL / 60.0
+        former_time, latter_time + 0.0000001, RIP4_HISTORY_INTERVAL / 60.0
     )[::TIME_TICKS_INTERVAL]
     target_ax.set_x_ticks_label(
         x_ticks=x_ticks,
@@ -106,11 +158,21 @@ def make_vertical_track_figure():
     # grid
     target_ax.draw_grid()
 
+    # trajectory period
+    from_dt = (
+        LATTER_DATETIME if TRAJECTORY_TYPE == "backward" else FORMER_DATETIME
+    )
+    to_dt = (
+        FORMER_DATETIME if TRAJECTORY_TYPE == "backward" else LATTER_DATETIME
+    )
+
     # title
-    title = f"{TRAJECTORY_TYPE} trajectory:  {VARIABLE_DICTIONARY[VARIABLE.name]}\nparcels at {PARCEL_LAT_BOTTOM}°N-{PARCEL_LAT_TOP}°N, {PARCEL_LON_LEFT}°E-{PARCEL_LON_RIGHT}°E at {HEIGHT_KM}km"
-    filename = f"{TRAJECTORY_TYPE}_{VARIABLE.name}_vertical_traj_at_{PARCEL_LAT_BOTTOM}_{PARCEL_LAT_TOP}_{PARCEL_LON_LEFT}_{PARCEL_LON_RIGHT}_{HEIGHT_KM}km.jpg"
-    saving_rootdir = generate_path(f"/img/{os.path.basename(WRFOUT_PATH)}")
-    saving_dir = f"{saving_rootdir}/{TRAJECTORY_TYPE}/{PARCEL_LAT_BOTTOM}_{PARCEL_LAT_TOP}_{PARCEL_LON_LEFT}_{PARCEL_LON_RIGHT}/{HEIGHT_KM}km/{VARIABLE.name}"
+    title = f"{TRAJECTORY_TYPE} trajectory:  {VARIABLE_DICTIONARY[VARIABLE.name]}\nparcels at {PARCEL_LAT_BOTTOM}°N-{PARCEL_LAT_TOP}°N, {PARCEL_LON_LEFT}°E-{PARCEL_LON_RIGHT}°E at {PARCEL_LEVEL_KM}km"
+    filename = f"{TRAJECTORY_TYPE}_{VARIABLE.name}_vertical_traj_at_{PARCEL_LAT_BOTTOM}_{PARCEL_LAT_TOP}_{PARCEL_LON_LEFT}_{PARCEL_LON_RIGHT}_{PARCEL_LEVEL_KM}km.jpg"
+    saving_rootdir = generate_path(f"/img/{os.path.basename(wrfout_path)}")
+    saving_dir = f"{saving_rootdir}/{TRAJECTORY_TYPE}/{from_dt}-{to_dt}/{PARCEL_LAT_BOTTOM}_{PARCEL_LAT_TOP}_{PARCEL_LON_LEFT}_{PARCEL_LON_RIGHT}/{PARCEL_LEVEL_KM}km/{VARIABLE.name}"
+    if filter_parcels_in_rectangle:
+        saving_dir += f"/{FILTERING_AREA_NAME}"
     target_ax.set_title(title, fontsize=16)
 
     # save

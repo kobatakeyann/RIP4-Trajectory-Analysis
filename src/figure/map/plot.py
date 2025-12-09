@@ -1,6 +1,5 @@
 import matplotlib.style as mplstyle
 from cartopy.mpl.geoaxes import GeoAxes
-
 from config.configuration import (
     LAT_BOTTOM,
     LAT_TICKS_INTERVAL,

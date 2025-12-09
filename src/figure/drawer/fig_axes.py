@@ -5,11 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
-from matplotlib.axes import Axes
-from matplotlib.collections import LineCollection
-from matplotlib.figure import Figure
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
 from config.configuration import UNIT_LABEL, plot_contour_label
 from config.constant import (
     CBAR_LABEL_LOCATION,
@@ -21,6 +16,10 @@ from config.constant import (
     CONTOUR_WIDTH,
 )
 from figure.property.fig_property import FigureProperties
+from matplotlib.axes import Axes
+from matplotlib.collections import LineCollection
+from matplotlib.figure import Figure
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 class FigureAxesController:
@@ -36,6 +35,25 @@ class FigureAxesController:
         lc.set_linewidth(self._props.line_width)
         lc.set_clim(vmin=self._props.cbar_min, vmax=self._props.cbar_max)
         self.line = self.ax.add_collection(lc)
+
+    def plot_median_line(
+        self, point_segments: np.ndarray, line_color: str, line_width: float
+    ) -> None:
+        lc = LineCollection(point_segments.tolist(), colors=line_color)
+        lc.set_linewidth(line_width)
+        self.ax.add_collection(lc)
+
+    def plot_shaded_area(
+        self,
+        x_values: np.ndarray,
+        y_values_bottom: np.ndarray,
+        y_values_top: np.ndarray,
+        color: str,
+        alpha: float,
+    ) -> None:
+        self.ax.fill_between(
+            x_values, y_values_bottom, y_values_top, color=color, alpha=alpha
+        )
 
     def plot_colorbar(self, is_auto_ticks=True) -> None:
         divider = make_axes_locatable(self.ax)

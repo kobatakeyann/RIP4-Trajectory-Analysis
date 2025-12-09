@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import Colormap
-
 from config.configuration import (
     COLOR_MAP_NAME,
     COLORBAR_MAX,
@@ -19,6 +17,7 @@ from config.constant import (
     FIGURE_SIZE,
     TRAJECTORY_LINE_WIDTH,
 )
+from matplotlib.colors import Colormap
 
 
 class FigureProperties:

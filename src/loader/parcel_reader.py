@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
-
 from constant.analysis_type import TrajectoryAnalysisType
 from constant.variables import Variable
-from loader.type import TrackedParcel
+from loader.type import TrackedParcels
 
 
 class TrajectoryResultReader:
@@ -12,7 +11,7 @@ class TrajectoryResultReader:
 
     def get_parcel_track(
         self, result_filepath: str, variable: Variable
-    ) -> TrackedParcel:
+    ) -> TrackedParcels:
 
         # set order toward trajectory time direction
         array_order = (
@@ -43,8 +42,8 @@ class TrajectoryResultReader:
             df[variable.value][::array_order][:max_valid_index]
         ).astype(float)
 
-        return TrackedParcel(
-            lon=lons,
-            lat=lats,
-            var_value=var_values,
+        return TrackedParcels(
+            lons=lons,
+            lats=lats,
+            var_values=var_values,
         )
